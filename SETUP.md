@@ -277,6 +277,54 @@ gh project link <n> --owner FreddiSantos --repo FreddiSantos/<repo>
 
 **Limitações da API (conferidas por introspecção):** não existe mutation para ligar ou configurar workflows do Projects (só `deleteProjectV2Workflow`). O **auto-add** de issues e PRs novos e o destino do "PR vinculado a issue" são configurados pela interface (ver pendências). Uma Action com `actions/add-to-project` exigiria um PAT com escopo `project`, porque o `GITHUB_TOKEN` não acessa projetos de usuário.
 
+## Etapa 5 — Automação de rotina (2026-10-21)
+
+### Arquitetura
+
+- **Centrais** (rodam só aqui no `github-setup`, olhando todos os repositórios públicos): resumo semanal e lembrete de PRs. Publicam **issues aqui**, com a label `report`.
+- **Reutilizáveis** (`workflow_call`): as regras de stale e de auto-merge ficam aqui, e cada repositório só tem um arquivo pequeno que as chama (`templates/workflows/*.yml`). Mudou a regra aqui, muda em todos.
+
+### Workflows
+
+| Workflow | Onde | Quando | O que faz | Como desativar |
+|---|---|---|---|---|
+| **Weekly summary** | github-setup | segundas 08:00 BRT + manual | issue "📊 Weekly summary — AAAA-Www" com commits, PRs, issues e releases da semana por repositório + PRs abertos; fecha o resumo anterior | Actions → Weekly summary → *Disable workflow* |
+| **PR review reminder** | github-setup | quartas e sextas 09:00 BRT + manual (com prazo opcional) | issue única "🔔 PRs waiting for review" com PRs abertos há 3+ dias; comenta `@FreddiSantos` (gera notificação); **fecha sozinha** quando não há | Actions → PR review reminder → *Disable* |
+| **Stale** | os 4 repositórios (chama `reusable-stale.yml`) | diário 07:00 BRT + manual | issues sem atividade por 60 dias e PRs por 30 dias recebem `status: stale` e um aviso; fecham 14 dias depois. **Nunca toca** em `priority: high`, `status: blocked`, `report`, releases (`autorelease: pending`) e `dependencies` | Actions → Stale → *Disable* em cada repositório |
+| **Dependabot auto-merge** | os 4 repositórios (chama `reusable-dependabot-automerge.yml`) | a cada PR do Dependabot | **minor/patch:** liga o auto-merge (squash), que só acontece com os checks obrigatórios verdes. **major:** comenta pedindo revisão e marca `priority: medium` | Actions → Dependabot auto-merge → *Disable* |
+
+Script: [`scripts/weekly_report.py`](scripts/weekly_report.py) (biblioteca padrão), com 6 testes em `tests/`. O `github-setup` ganhou CI (pre-commit + pytest), CodeQL e o bloco `github-actions` do Dependabot de volta.
+
+### Proteção da main (ruleset "main protection", aprovado por você)
+
+Aplicada pelo `Set-RepoDefaults.ps1 -RequiredChecks "..."` (cria ou atualiza; idempotente):
+
+| Repositório | Checks obrigatórios em PRs |
+|---|---|
+| python-project-template, ai-learning-journey | Lint (pre-commit), Test (Python 3.12), Test (Python 3.13), Build |
+| github-setup | Lint (pre-commit), Test |
+| FreddiSantos | Analyze (actions), Analyze (python) |
+
+Também: proibido apagar a main e dar force push; **auto-merge permitido** nas configurações. O papel **admin (você) tem bypass**, então push direto na main continua funcionando (o GitHub mostra "Bypassed rule violations", e isso é esperado).
+**Reverter:** Settings → Rules → Rulesets → *main protection* → Delete (ou *Enforcement: Disabled*).
+
+### Testes feitos no GitHub
+
+- Weekly summary: criou a issue #2 com dados reais (25 commits na semana) ✅.
+- PR reminder com prazo 0: criou a issue #1 e comentou `@FreddiSantos 4 pull request(s)...` ✅. Com prazo 3: **fechou** a issue sozinho ✅.
+- Stale no template: rodou sem erros ✅ (nada estava inativo).
+- **Auto-merge de ponta a ponta:** `@dependabot rebase` no PR #2 do template → workflow ligou o auto-merge → 9 checks verdes → **merge automático** ✅ → o card foi para **Concluído** no board sozinho ✅.
+
+### Erros encontrados e corrigidos
+
+- **`--jq` com espaços no PowerShell 5.1:** o filtro chegava partido ao gh ("accepts 1 arg(s), received 2"), e o script tentava recriar o ruleset (HTTP 422). Agora o filtro é feito no PowerShell.
+- **`ConvertFrom-Json` no PowerShell 5.1** entrega o array inteiro como um objeto só para o `Where-Object`. Corrigido com parênteses em volta.
+
+### Limitações conhecidas
+
+- **Merges feitos pelo bot não disparam workflows na main** (regra do `GITHUB_TOKEN`). Depois de um auto-merge do Dependabot, o CI da main e o release-please só rodam no próximo push seu. O código já foi testado no PR, então o risco é baixo.
+- O PR #1 do Dependabot no `ai-learning-journey` foi aberto antes do auto-merge existir; ele entra na próxima vez que o Dependabot atualizar o PR (ou com `@dependabot rebase`).
+
 ## Pendências que dependem de você
 
 - [ ] Criar o PAT `METRICS_TOKEN` (instruções no relatório da Etapa 1) e salvar como secret do repositório de perfil
