@@ -6,7 +6,7 @@
 
 Versioned, reproducible configuration for how I work on GitHub: repository defaults, security, labels, reusable workflows and routine automation, applied to every repository I own.
 
-> 🇧🇷 Configuração versionada e reproduzível do meu GitHub. O registro completo, em português, com decisões, como reverter e pendências, está em [SETUP.md](SETUP.md).
+> 🇧🇷 Configuração versionada e reproduzível do meu GitHub. O registro completo, em português, com decisões, como reverter e pendências, está em [SETUP.md](SETUP.md); o resumo está em [RELATORIO-FINAL.md](RELATORIO-FINAL.md).
 
 ## What's inside
 

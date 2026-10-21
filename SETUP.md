@@ -301,9 +301,10 @@ Aplicada pelo `Set-RepoDefaults.ps1 -RequiredChecks "..."` (cria ou atualiza; id
 
 | Repositório | Checks obrigatórios em PRs |
 |---|---|
-| python-project-template, ai-learning-journey | Lint (pre-commit), Test (Python 3.12), Test (Python 3.13), Build |
+| python-project-template | Lint (pre-commit), Test (Python 3.12), Test (Python 3.13), Build |
+| ai-learning-journey | nenhum (alterado na Etapa 6: workflows commitam na main) |
 | github-setup | Lint (pre-commit), Test |
-| FreddiSantos | Analyze (actions), Analyze (python) |
+| FreddiSantos | nenhum (alterado na Etapa 6: workflows commitam na main) |
 
 Também: proibido apagar a main e dar force push; **auto-merge permitido** nas configurações. O papel **admin (você) tem bypass**, então push direto na main continua funcionando (o GitHub mostra "Bypassed rule violations", e isso é esperado).
 **Reverter:** Settings → Rules → Rulesets → *main protection* → Delete (ou *Enforcement: Disabled*).
@@ -325,6 +326,41 @@ Também: proibido apagar a main e dar force push; **auto-merge permitido** nas c
 - **Merges feitos pelo bot não disparam workflows na main** (regra do `GITHUB_TOKEN`). Depois de um auto-merge do Dependabot, o CI da main e o release-please só rodam no próximo push seu. O código já foi testado no PR, então o risco é baixo.
 - O PR #1 do Dependabot no `ai-learning-journey` foi aberto antes do auto-merge existir; ele entra na próxima vez que o Dependabot atualizar o PR (ou com `@dependabot rebase`).
 
+## Etapa 6 — Credibilidade (2026-10-21)
+
+Feita direto, a seu pedido ("termine todo o processo, sem pedir permissão").
+
+### Auditoria
+
+- Commits: **100% no padrão Conventional Commits** nos 4 repositórios ✅. Issues com títulos claros ✅.
+- Descrições e topics: presentes em todos ✅.
+- Problemas encontrados e corrigidos:
+
+| Problema | Correção |
+|---|---|
+| `github-setup` sem licença e com saúde da comunidade em 28% | MIT, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md`, templates de issue e PR, `CODEOWNERS` → **100%** |
+| README do `github-setup` com 3 linhas | README completo: conteúdo, diagrama Mermaid, como configurar um repositório novo, automações |
+| Perfil com **imagem de métricas quebrada** (sem `METRICS_TOKEN`) | a seção só aparece quando o SVG existe; sem o secret, o job de métricas é **pulado** (não falha) |
+| Perfil com "Projects coming soon" (nada fixado) | sem fixados, mostra os repositórios públicos mais recentes |
+| Template mostrava `# <Project name>` sem contexto | aviso visível no topo explicando o template |
+| PRs pendentes | template: release **v0.2.0** publicada com CHANGELOG |
+
+### Erro grave encontrado e corrigido: ruleset bloqueando os bots
+
+Depois da Etapa 5, o workflow da linha do tempo falhou: `GH013: Repository rule violations ... 4 of 4 required status checks are expected`. O ruleset com checks obrigatórios bloqueava os commits automáticos na main (linha do tempo e README do perfil).
+
+- Tentativa 1: adicionar o GitHub Actions (Integration 15368) como bypass → **HTTP 422**: *"Actor GitHub Actions integration must be part of the ruleset source or owner organization"*. Só funciona em organizações.
+- Solução adotada:
+  - **Template e github-setup** (nenhum bot dá push na main): ruleset com checks obrigatórios mantido.
+  - **Perfil e jornada:** ruleset só com `deletion` e `non_fast_forward`.
+  - **Auto-merge do Dependabot reescrito:** não usa mais `--auto`; espera explicitamente todas as **execuções de workflow** do commit (exceto a própria) terminarem com sucesso e só então faz o merge. Se algo falhar, não faz merge. Funciona com ou sem ruleset.
+- Verificado depois: linha do tempo ✅ (já mostra "Released python-project-template v0.2.0"), Metrics ✅, todos os workflows da main verdes nos 4 repositórios ✅.
+
+### Não feito
+
+- **Merge dos PRs da jornada** (#1 Dependabot, #2 release 0.2.0): o comando foi bloqueado pelo classificador de segurança do modo automático do Claude Code. Fica para você (ver pendências).
+- Sugestões de conteúdo (screenshots, GIFs, diagramas, primeiro projeto de IA): listadas no [RELATORIO-FINAL.md](RELATORIO-FINAL.md), porque exigem seu julgamento.
+
 ## Pendências que dependem de você
 
 - [ ] Criar o PAT `METRICS_TOKEN` (instruções no relatório da Etapa 1) e salvar como secret do repositório de perfil
@@ -336,4 +372,5 @@ Também: proibido apagar a main e dar force push; **auto-merge permitido** nas c
 - [ ] Fixar repositórios pela interface (Customize your pins) conforme forem surgindo
 - [ ] Instalar o pre-commit no seu terminal: `uv tool install pre-commit` (ver Etapa 3)
 - [ ] Informar o mês e o ano em que entrou na LIA e no PET (em `journey.toml` estão como "em andamento", sem data)
+- [ ] Fazer merge dos PRs da jornada: primeiro o #1 (Dependabot), depois o #2 (release 0.2.0, clicando antes em *Approve workflows to run*)
 - [ ] No board, em `···` → **Workflows**: ligar **Auto-add to project** (filtro `is:issue,pr is:open`; o plano Free permite 1 workflow de auto-add, então escolha o repositório principal) e, em **Pull request linked to issue**, definir o status como **Revisão**
