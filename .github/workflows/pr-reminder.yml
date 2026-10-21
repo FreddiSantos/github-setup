@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: "0 12 * * 3,5" # quartas e sextas, 09:00 em Brasília
   workflow_dispatch:
+    inputs:
+      days:
+        description: "Minimum PR age in days"
+        type: number
+        default: 3
 
 permissions:
   contents: read
@@ -22,4 +27,4 @@ jobs:
       - run: uv run --python 3.13 scripts/weekly_report.py reminder
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REMINDER_DAYS: "3"
+          REMINDER_DAYS: ${{ inputs.days || 3 }}

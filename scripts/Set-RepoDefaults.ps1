@@ -95,7 +95,9 @@ $ruleset = @{
 } | ConvertTo-Json -Depth 10
 
 # Filtra no PowerShell: o 5.1 parte argumentos com espaços/aspas ao chamar programas externos.
-$existingId = (gh api "repos/$Repo/rulesets" | ConvertFrom-Json |
+# Os parênteses em volta do ConvertFrom-Json são necessários: no 5.1 ele entrega o array
+# inteiro como UM objeto, e o Where-Object não enumeraria os itens.
+$existingId = ((gh api "repos/$Repo/rulesets" | ConvertFrom-Json) |
     Where-Object { $_.name -eq 'main protection' } | Select-Object -First 1).id
 if ($existingId) {
     Invoke-Gh @('-X', 'PUT', "repos/$Repo/rulesets/$existingId") $ruleset
