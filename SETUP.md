@@ -69,7 +69,7 @@ Repositório de perfil: `FreddiSantos/FreddiSantos` (o README dele aparece na p�
 
 - [ ] Criar o PAT `METRICS_TOKEN` (instruções no relatório da Etapa 1) e salvar como secret do repositório de perfil
 - [x] Informar a URL do LinkedIn (adicionada em 2026-10-21)
-- [ ] Revisar a seção **Stack** do README (preenchida com uma base mínima)
+- [x] Revisar a seção **Stack** do README (definida com você em 2026-10-21)
 - [ ] Preencher nome, bio, foto e links em Settings → Profile
 - [ ] Ativar "Keep my email addresses private" e "Block command line pushes that expose my email" em Settings → Emails
 - [ ] Ativar a autenticação em dois fatores (2FA), se ainda não estiver ativa
