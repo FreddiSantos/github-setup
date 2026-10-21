@@ -1,0 +1,35 @@
+{
+  "labels": [
+    { "name": "type: bug", "color": "d73a4a", "description": "Something is not working" },
+    { "name": "type: feature", "color": "0e8a16", "description": "New feature or improvement" },
+    { "name": "type: docs", "color": "0075ca", "description": "Documentation only" },
+    { "name": "type: refactor", "color": "c5def5", "description": "Code change without behavior change" },
+    { "name": "type: test", "color": "bfd4f2", "description": "Tests only" },
+    { "name": "type: chore", "color": "ededed", "description": "Maintenance, tooling, CI" },
+    { "name": "type: research", "color": "5319e7", "description": "Study, experiment or literature review" },
+    { "name": "type: question", "color": "d876e3", "description": "Further information is requested" },
+
+    { "name": "priority: high", "color": "b60205", "description": "Do it first" },
+    { "name": "priority: medium", "color": "fbca04", "description": "Do it soon" },
+    { "name": "priority: low", "color": "c2e0c6", "description": "Nice to have" },
+
+    { "name": "area: ml", "color": "7057ff", "description": "Models, training, evaluation" },
+    { "name": "area: data", "color": "006b75", "description": "Datasets, cleaning, pipelines" },
+    { "name": "area: llm", "color": "8a63d2", "description": "LLMs, prompts, agents, RAG" },
+    { "name": "area: civil-engineering", "color": "a2662c", "description": "Domain logic from civil engineering" },
+    { "name": "area: ci", "color": "1d76db", "description": "GitHub Actions, automation" },
+    { "name": "area: docs", "color": "0052cc", "description": "README, guides, diagrams" },
+
+    { "name": "status: triage", "color": "e4e669", "description": "Needs review and labeling" },
+    { "name": "status: blocked", "color": "000000", "description": "Waiting on something else" },
+    { "name": "status: needs-info", "color": "fef2c0", "description": "Waiting for more details" },
+    { "name": "status: duplicate", "color": "cfd3d7", "description": "Already reported" },
+    { "name": "status: wontfix", "color": "ffffff", "description": "Will not be worked on" },
+    { "name": "status: stale", "color": "dadada", "description": "No activity for a while" },
+
+    { "name": "good first issue", "color": "7057ff", "description": "Good for newcomers" },
+    { "name": "help wanted", "color": "008672", "description": "Extra attention is needed" },
+    { "name": "dependencies", "color": "0366d6", "description": "Dependency updates (Dependabot)" }
+  ],
+  "replace_defaults": ["bug", "documentation", "duplicate", "enhancement", "invalid", "question", "wontfix"]
+}

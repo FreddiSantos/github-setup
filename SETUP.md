@@ -201,6 +201,82 @@ Depois, em cada repositório clonado: `pre-commit install`. A partir daí, todo 
 
 > Os clones atuais já têm os hooks instalados, mas apontando para um Python temporário do Claude. Se aparecer *"pre-commit not found"* no seu terminal, rode os dois comandos acima.
 
+## Etapa 4 — Organização e gestão (2026-10-21)
+
+Decisões: labels padrão do GitHub **substituídas**; board **público**; jornada `FreddiSantos/ai-learning-journey` aprovada; Discussions só na jornada.
+
+### Labels (`labels/labels.json` + `scripts/Set-Labels.ps1`)
+
+26 labels em 4 grupos + 3 de uso geral, aplicadas nos 4 repositórios:
+
+| Grupo | Labels |
+|---|---|
+| type | bug, feature, docs, refactor, test, chore, research, question |
+| priority | high, medium, low |
+| area | ml, data, llm, civil-engineering, ci, docs |
+| status | triage, blocked, needs-info, duplicate, wontfix, stale |
+| geral | good first issue, help wanted, dependencies |
+
+O script apaga as labels padrão do GitHub (`bug`, `documentation`, `duplicate`, `enhancement`, `invalid`, `question`, `wontfix`) **só se nenhuma issue ou PR as usar**. Labels criadas por ferramentas (`autorelease: pending`, `python:uv`) não são tocadas.
+Uso: `powershell -ExecutionPolicy Bypass -File scripts\Set-Labels.ps1 -Repo "FreddiSantos/a,FreddiSantos/b"`
+
+**Erro corrigido:** com `powershell -File`, uma lista separada por vírgula não vira array, e um parâmetro `[string]` junta a lista de volta. O script agora recebe texto e separa numa variável própria.
+
+### Topics
+
+| Repositório | Topics |
+|---|---|
+| FreddiSantos | github-profile, profile-readme, github-actions, lowlighter-metrics |
+| github-setup | github, devops, automation, github-actions, powershell, developer-experience |
+| python-project-template | python, template, data-science, machine-learning, uv, ruff, github-actions, python-template, pre-commit, codeql, dependabot, release-please |
+| ai-learning-journey | ai, machine-learning, deep-learning, llm, learning-journal, civil-engineering, python |
+
+### Jornada em IA — [FreddiSantos/ai-learning-journey](https://github.com/FreddiSantos/ai-learning-journey)
+
+Criado **a partir do template** (já nasceu com CI, CodeQL, Dependabot, pre-commit, commitlint e release-please) e configurado com `Set-RepoDefaults.ps1 -AllowActionsPullRequests` e `Set-Labels.ps1`. **Discussions** ativado, para colegas sugerirem cursos e materiais.
+
+| Arquivo | O que faz |
+|---|---|
+| `journey.toml` | **onde você edita**: cursos, leituras, marcos (`date = "AAAA-MM"` ou `""` para "em andamento") |
+| `src/journey/` | lê o TOML, busca repositórios públicos e releases na API do GitHub, gera o Markdown |
+| `.github/workflows/update-timeline.yml` | toda segunda (05:00 BRT), a cada push no `journey.toml` e manual; commita o README só se mudou |
+| `tests/` | 13 testes, cobertura de 93%, sem acesso à rede |
+
+**Verificação:** rodei o script com dados reais (6 entradas), e a segunda execução não mudou nada ✅. No GitHub: CI ✅, CodeQL ✅, Update timeline ✅, Release Please ✅ (abriu o PR #2 "release 0.2.0"); o Dependabot abriu o PR #1.
+
+**Para adicionar algo:** edite `journey.toml` direto no GitHub (ícone de lápis) e salve; em 1 a 2 minutos o README se atualiza.
+
+**Para desativar:** Actions → Update timeline → *Disable workflow*.
+
+### Board — [Roadmap: AI & Civil Engineering](https://github.com/users/FreddiSantos/projects/1)
+
+Público, vinculado aos 4 repositórios. Requer o escopo `project` no gh (`gh auth refresh -s project`, feito em 2026-10-21).
+
+| Coluna (campo Status) | Uso |
+|---|---|
+| Backlog | ideias e tarefas não iniciadas |
+| Em andamento | sendo feito agora |
+| Revisão | esperando revisão ou PR |
+| Concluído | feito |
+
+Visualizações: **Board** (quadro) e **Table** (tabela).
+
+**Automações nativas (ativas):** item adicionado → Backlog; item fechado → Concluído; PR com merge → Concluído; PR vinculado a issue → move a issue; status Concluído → fecha a issue; sub-issues entram sozinhas.
+As colunas foram renomeadas com `updateProjectV2Field` **mantendo os IDs** das opções originais (Todo/In Progress/Done), e é por isso que as automações acima continuam apontando para as colunas certas.
+
+Os 4 PRs abertos (releases e Dependabot) foram adicionados e movidos para **Revisão**.
+
+**Como recriar (reprodutível):**
+```bash
+gh project create --owner FreddiSantos --title "Roadmap: AI & Civil Engineering"
+gh project edit <n> --owner FreddiSantos --visibility PUBLIC
+# Status: updateProjectV2Field com as opções {id antigo: Backlog, Em andamento, Concluído} + nova "Revisão"
+# Board:  createProjectV2View(layout: BOARD_LAYOUT)
+gh project link <n> --owner FreddiSantos --repo FreddiSantos/<repo>
+```
+
+**Limitações da API (conferidas por introspecção):** não existe mutation para ligar ou configurar workflows do Projects (só `deleteProjectV2Workflow`). O **auto-add** de issues e PRs novos e o destino do "PR vinculado a issue" são configurados pela interface (ver pendências). Uma Action com `actions/add-to-project` exigiria um PAT com escopo `project`, porque o `GITHUB_TOKEN` não acessa projetos de usuário.
+
 ## Pendências que dependem de você
 
 - [ ] Criar o PAT `METRICS_TOKEN` (instruções no relatório da Etapa 1) e salvar como secret do repositório de perfil
@@ -211,3 +287,5 @@ Depois, em cada repositório clonado: `pre-commit install`. A partir daí, todo 
 - [ ] Ativar a autenticação em dois fatores (2FA), se ainda não estiver ativa
 - [ ] Fixar repositórios pela interface (Customize your pins) conforme forem surgindo
 - [ ] Instalar o pre-commit no seu terminal: `uv tool install pre-commit` (ver Etapa 3)
+- [ ] Informar o mês e o ano em que entrou na LIA e no PET (em `journey.toml` estão como "em andamento", sem data)
+- [ ] No board, em `···` → **Workflows**: ligar **Auto-add to project** (filtro `is:issue,pr is:open`; o plano Free permite 1 workflow de auto-add, então escolha o repositório principal) e, em **Pull request linked to issue**, definir o status como **Revisão**
