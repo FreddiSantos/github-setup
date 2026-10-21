@@ -130,6 +130,70 @@ Depois siga o checklist no comentário do topo do README.
 
 **Erro encontrado:** dentro do app do Claude (pacote MSIX), gravações em `AppData\Roaming` são redirecionadas para uma pasta virtual, e o uv não conseguiu criar o atalho do Python 3.13 lá. Nos comandos do Claude, o Python fica em `C:\Users\pedro\.local\share\uv\python` (`UV_PYTHON_INSTALL_DIR`). No seu terminal normal o uv funciona no local padrão, sem ajuste.
 
+## Etapa 3 — Qualidade e segurança (2026-10-21)
+
+### Escolhas
+
+| Ferramenta | Escolha | Por quê |
+|---|---|---|
+| Atualização de dependências | **Dependabot** (não Renovate) | Nativo do GitHub: sem instalar app nem dar permissões a terceiros. Suporta `uv`, `github-actions` e `pre-commit` (conferido na documentação em 2026-10-21). É o que o `dependabot/fetch-metadata` usa para o auto-merge da Etapa 5. O Renovate é mais configurável, mas exige instalar um GitHub App. |
+| Análise estática | **CodeQL** (workflow avançado, `security-extended`) | Gratuito em repositório público. Analisa Python **e** os próprios workflows (`actions`), que são um vetor de ataque comum. |
+| Secrets | **Secret scanning + push protection** (GitHub) + **gitleaks** (local) | Já vinham ativos em repositórios públicos. O gitleaks barra o secret **antes** do commit, no seu computador. |
+| Hooks locais | **pre-commit** 4.7.0 | Padrão de mercado. Os mesmos hooks rodam no CI (job `lint`), então a regra é uma só. |
+| Mensagens de commit | **conventional-pre-commit** (local) + **commitlint** (CI) | O commitlint precisa de Node, que você não tem. O hook local em Python faz a mesma checagem no `commit-msg`, e o commitlint roda no GitHub, sobre os commits e o título do PR. |
+| Releases | **release-please** v5 | Lê os commits `feat:` e `fix:`, abre um PR de release com CHANGELOG e versão, e cria a tag e a release no merge. Não publica nada sem você aprovar o PR. |
+
+### Configurações nos repositórios (`scripts/Set-RepoDefaults.ps1`)
+
+Aplicado em `FreddiSantos`, `github-setup` e `python-project-template`, verificado pela API:
+
+| Configuração | Estado |
+|---|---|
+| Dependabot alerts e security updates | ativados |
+| Secret scanning + push protection | ativados (já vinham por padrão) |
+| Private vulnerability reporting | ativado |
+| Token padrão do Actions | **somente leitura**; cada workflow declara o que precisa |
+| Actions pode abrir PRs | só no template (release-please precisa) |
+| Merge | só **Squash and merge**, com o título do PR como mensagem; branch apagada após o merge |
+
+**Para um repositório novo:** `powershell -ExecutionPolicy Bypass -File scripts\Set-RepoDefaults.ps1 -Repo FreddiSantos/<nome> -AllowActionsPullRequests`
+
+### Arquivos por repositório
+
+| Arquivo | Template | Perfil | github-setup |
+|---|:-:|:-:|:-:|
+| `.github/dependabot.yml` (uv / actions / pre-commit, semanal, agrupado) | ✅ uv + actions + pre-commit | ✅ actions + pre-commit | ✅ pre-commit + actions |
+| `.github/workflows/codeql.yml` (actions + python) | ✅ | ✅ | — (ainda sem código analisável) |
+| `.pre-commit-config.yaml` | ✅ completo | ✅ higiene + ruff + gitleaks + commit-msg | ✅ higiene + gitleaks + commit-msg |
+| `.github/workflows/commitlint.yml` + `commitlint.config.mjs` | ✅ | — | — |
+| `.github/workflows/release-please.yml` + config + manifest | ✅ | — | — |
+| CI `lint` rodando o pre-commit | ✅ | — | — |
+
+No template, os hooks são: higiene de arquivos, bloqueio de arquivos > 1 MB, `detect-private-key`, ruff (lint + formatação), `uv-lock`, `nbstripout` (limpa saídas de notebooks), gitleaks e Conventional Commits.
+
+### Testes feitos
+
+- pre-commit nos 3 repositórios: todos os hooks passam ✅. Na primeira rodada ele **corrigiu** linhas em branco sobrando no fim de `CODE_OF_CONDUCT.md` e `LICENSE`, e reformatou `sync_pinned.py`.
+- Commit com mensagem `"mudei umas coisas"`: **bloqueado** ✅.
+- Arquivo com um token falso no formato `ghp_...`: **bloqueado** pelo gitleaks ✅ (regra `github-pat`). Com a chave de exemplo da AWS (contém "EXAMPLE") ele não bloqueia, de propósito.
+- `uv sync --locked` com a versão alterada no `pyproject.toml`: **quebra**. Por isso o workflow do release-please roda `uv lock` no próprio PR de release.
+
+### Limitações conhecidas
+
+- PRs e commits criados pelo `GITHUB_TOKEN` (release-please, sync dos fixados) **não disparam** outros workflows: o PR de release não roda CI. É uma regra do GitHub contra loops. Para mudar seria preciso um PAT ou um GitHub App; por ora não vale a pena.
+- `lowlighter/metrics` continua em `@latest` (canal estável recomendado pelo projeto); as demais actions estão fixadas por SHA.
+- O ruff do pre-commit e o do `uv.lock` são versões declaradas em dois lugares. O Dependabot atualiza os dois toda semana.
+
+### Instalar os hooks no seu computador
+
+No seu terminal (uma vez):
+```
+uv tool install pre-commit
+```
+Depois, em cada repositório clonado: `pre-commit install`. A partir daí, todo `git commit` passa pelos hooks.
+
+> Os clones atuais já têm os hooks instalados, mas apontando para um Python temporário do Claude. Se aparecer *"pre-commit not found"* no seu terminal, rode os dois comandos acima.
+
 ## Pendências que dependem de você
 
 - [ ] Criar o PAT `METRICS_TOKEN` (instruções no relatório da Etapa 1) e salvar como secret do repositório de perfil
@@ -139,3 +203,4 @@ Depois siga o checklist no comentário do topo do README.
 - [ ] Ativar "Keep my email addresses private" e "Block command line pushes that expose my email" em Settings → Emails
 - [ ] Ativar a autenticação em dois fatores (2FA), se ainda não estiver ativa
 - [ ] Fixar repositórios pela interface (Customize your pins) conforme forem surgindo
+- [ ] Instalar o pre-commit no seu terminal: `uv tool install pre-commit` (ver Etapa 3)

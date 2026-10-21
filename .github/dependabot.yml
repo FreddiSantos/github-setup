@@ -1,0 +1,30 @@
+# Atualiza semanalmente os hooks do pre-commit (e as actions, quando houver workflows aqui).
+version: 2
+updates:
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      pre-commit-hooks:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions:
+        patterns: ["*"]
