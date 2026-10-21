@@ -65,6 +65,41 @@ Repositório de perfil: `FreddiSantos/FreddiSantos` (o README dele aparece na p�
 - `Sync pinned projects` rodado manualmente: ✅ sucesso ("README já estava em dia"; nenhum commit, como esperado sem fixados).
 - `Metrics`: ❌ falhou no primeiro push com "You must provide a valid GitHub personal token". **Esperado** até o secret `METRICS_TOKEN` ser criado. Depois disso, rode de novo: `gh workflow run metrics.yml -R FreddiSantos/FreddiSantos`.
 
+## Etapa 2 — Template de repositório (2026-10-21)
+
+Decisões: licença **MIT**; template `FreddiSantos/python-project-template`.
+
+| Arquivo | O que faz |
+|---|---|
+| `README.md` | esqueleto: problema, solução, como rodar, dados, reprodutibilidade, stack, resultados, roadmap, licença |
+| `LICENSE` | MIT (texto oficial da API do GitHub), © 2026 Pedro Freddi |
+| `CODE_OF_CONDUCT.md` | Contributor Covenant **3.0** oficial; denúncias pelo LinkedIn (sem e-mail pessoal) |
+| `CONTRIBUTING.md`, `SECURITY.md` | como contribuir; vulnerabilidades via *Report a vulnerability* (privado) |
+| `.github/ISSUE_TEMPLATE/*`, `pull_request_template.md` | formulários de bug/feature e checklist de PR |
+| `.github/CODEOWNERS` | você revisa tudo |
+| `.editorconfig`, `.gitattributes` | UTF-8, LF, 4 espaços em Python |
+| `.gitignore` | Python + dados (`data/*`, `*.csv`, `*.parquet`…) + modelos (`*.pt`, `*.safetensors`…) + secrets (`.env`, `*.key`…) |
+| `pyproject.toml`, `uv.lock`, `.python-version` | projeto com **uv**, Python 3.13, dependências travadas (reprodutibilidade) |
+| `.github/workflows/ci.yml` | a cada push/PR: `ruff check`, `ruff format --check`, `pytest`, `uv build` |
+
+**Por que uv + ruff:** o uv substitui pip, venv e pyenv, instala o Python certo sozinho e gera um lockfile (mesmas versões em qualquer máquina). O ruff faz lint e formatação numa ferramenta só, no lugar de flake8, isort e black. Ambos são da Astral e recebem releases semanais.
+
+**Verificação:** rodei localmente os mesmos passos do CI: lint ✅, formatação ✅, 3 testes ✅ e build ✅.
+
+**Observações:**
+- `*.csv` é ignorado em todo o repositório. Se um projeto precisar versionar um CSV pequeno de exemplo, use `git add -f arquivo.csv`.
+- Os templates de issue aplicam as labels `type: bug`, `type: feature` e `status: triage`, que serão criadas na Etapa 4. Até lá, o GitHub simplesmente ignora as labels inexistentes.
+- `setup-uv` não publica mais tag de versão principal (`v10`); por isso está fixado em `v10.3.0`. O Dependabot (Etapa 3) vai atualizar.
+
+### Instalado nesta etapa
+
+| Item | Como | Por quê | Como reverter |
+|---|---|---|---|
+| uv 0.13.4 | `winget install --id astral-sh.uv` (portátil, sem admin) | gerenciar Python e dependências; necessário para o pre-commit na Etapa 3 | `winget uninstall --id astral-sh.uv` |
+| Python 3.13.16 (gerenciado pelo uv) | baixado automaticamente pelo `uv` | rodar os testes localmente | `uv python uninstall 3.13` |
+
+**Erro encontrado:** dentro do app do Claude (pacote MSIX), gravações em `AppData\Roaming` são redirecionadas para uma pasta virtual, e o uv não conseguiu criar o atalho do Python 3.13 lá. Nos comandos do Claude, o Python fica em `C:\Users\pedro\.local\share\uv\python` (`UV_PYTHON_INSTALL_DIR`). No seu terminal normal o uv funciona no local padrão, sem ajuste.
+
 ## Pendências que dependem de você
 
 - [ ] Criar o PAT `METRICS_TOKEN` (instruções no relatório da Etapa 1) e salvar como secret do repositório de perfil
