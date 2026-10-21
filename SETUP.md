@@ -102,6 +102,20 @@ Decisões: licença **MIT**; template `FreddiSantos/python-project-template`.
 
 Verificado de novo: lint ✅, testes em 3.12 e 3.13 ✅ (cobertura 100%), build ✅, `CITATION.cff` válido pelo `cffconvert` ✅.
 
+### Publicação (2026-10-21, aprovada por você)
+
+- [FreddiSantos/python-project-template](https://github.com/FreddiSantos/python-project-template): público, **marcado como template**, licença MIT detectada.
+- Topics: `python`, `template`, `data-science`, `machine-learning`, `uv`, `ruff`, `github-actions`.
+- **Private vulnerability reporting** ativado (`PUT /repos/.../private-vulnerability-reporting`). É isso que faz funcionar o botão citado no `SECURITY.md`. Para desativar: Settings → Security → *Private vulnerability reporting*.
+- Community health do GitHub: **100%**.
+- CI no GitHub: Lint ✅, Test 3.12 ✅, Test 3.13 ✅, Build ✅.
+
+**Como usar:** na página do template, *Use this template → Create a new repository*, ou:
+`gh repo create FreddiSantos/<nome> --template FreddiSantos/python-project-template --public --clone`
+Depois siga o checklist no comentário do topo do README.
+
+> O relato privado de vulnerabilidades **não é copiado** para os repositórios criados a partir do template; ele precisa ser ativado em cada um (isso entra na automação da Etapa 3).
+
 **Observações:**
 - `*.csv` é ignorado em todo o repositório. Se um projeto precisar versionar um CSV pequeno de exemplo, use `git add -f arquivo.csv`.
 - Os templates de issue aplicam as labels `type: bug`, `type: feature` e `status: triage`, que serão criadas na Etapa 4. Até lá, o GitHub simplesmente ignora as labels inexistentes.
