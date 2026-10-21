@@ -366,11 +366,11 @@ Depois da Etapa 5, o workflow da linha do tempo falhou: `GH013: Repository rule 
 - [ ] Criar o PAT `METRICS_TOKEN` (instruções no relatório da Etapa 1) e salvar como secret do repositório de perfil
 - [x] Informar a URL do LinkedIn (adicionada em 2026-10-21)
 - [x] Revisar a seção **Stack** do README (definida com você em 2026-10-21)
-- [ ] Preencher nome, bio, foto e links em Settings → Profile
-- [ ] Ativar "Keep my email addresses private" e "Block command line pushes that expose my email" em Settings → Emails
-- [ ] Ativar a autenticação em dois fatores (2FA), se ainda não estiver ativa
+- [x] Nome, bio, localização e LinkedIn preenchidos via API em 2026-10-21 (escopo `user`); falta só a **foto**
+- [ ] **E-mail está público** (verificado em 2026-10-21): ativar "Keep my email addresses private" e "Block command line pushes that expose my email" em Settings → Emails
+- [x] 2FA: já estava ativo (verificado em 2026-10-21)
 - [ ] Fixar repositórios pela interface (Customize your pins) conforme forem surgindo
-- [ ] Instalar o pre-commit no seu terminal: `uv tool install pre-commit` (ver Etapa 3)
-- [ ] Informar o mês e o ano em que entrou na LIA e no PET (em `journey.toml` estão como "em andamento", sem data)
+- [x] pre-commit instalado no seu terminal com `uv tool install pre-commit --python 3.13` (sem `--python`, o uv escolhe um Python novo demais e o pyyaml falha por falta do compilador C++) e hooks reinstalados nos 4 repositórios
+- [x] Datas da LIA (2026-09) e do PET (2026-06) na linha do tempo
 - [ ] Fazer merge dos PRs da jornada: primeiro o #1 (Dependabot), depois o #2 (release 0.2.0, clicando antes em *Approve workflows to run*)
 - [ ] No board, em `···` → **Workflows**: ligar **Auto-add to project** (filtro `is:issue,pr is:open`; o plano Free permite 1 workflow de auto-add, então escolha o repositório principal) e, em **Pull request linked to issue**, definir o status como **Revisão**
