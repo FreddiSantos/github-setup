@@ -178,9 +178,16 @@ No template, os hooks são: higiene de arquivos, bloqueio de arquivos > 1 MB, `d
 - Arquivo com um token falso no formato `ghp_...`: **bloqueado** pelo gitleaks ✅ (regra `github-pat`). Com a chave de exemplo da AWS (contém "EXAMPLE") ele não bloqueia, de propósito.
 - `uv sync --locked` com a versão alterada no `pyproject.toml`: **quebra**. Por isso o workflow do release-please roda `uv lock` no próprio PR de release.
 
+**No GitHub, logo após o push:**
+- Template, push na main: CI ✅, CodeQL ✅ (actions + python), Release Please ✅.
+- O release-please abriu o **PR #1 "chore(main): release 0.2.0"**: `pyproject.toml`, `uv.lock` (pelo passo extra), manifest e `CHANGELOG.md` atualizados juntos. CI desse PR ✅ (depois de aprovado; ver limitações).
+- O Dependabot abriu o **PR #2** (`build(deps-dev): update uv-build requirement`). CI, CodeQL e Commitlint ✅.
+- Perfil: CodeQL ✅, Dependabot ✅.
+- **Erro:** o Dependabot do `github-setup` falhou com `dependency_file_not_found`, porque ainda não há workflows para atualizar. O bloco `github-actions` foi removido e volta na Etapa 5.
+
 ### Limitações conhecidas
 
-- PRs e commits criados pelo `GITHUB_TOKEN` (release-please, sync dos fixados) **não disparam** outros workflows: o PR de release não roda CI. É uma regra do GitHub contra loops. Para mudar seria preciso um PAT ou um GitHub App; por ora não vale a pena.
+- **PR de release precisa de aprovação para rodar o CI.** PRs abertos pelo `GITHUB_TOKEN` (release-please) aparecem com os checks em **"action_required"**: é uma proteção do GitHub contra loops. No PR, clique em **"Approve workflows to run"**. Se você aprovar dois runs juntos, a regra de concorrência do CI cancela um deles; nesse caso, use *Re-run jobs* no run do commit mais recente. Para eliminar isso seria preciso um PAT ou um GitHub App; por ora não vale a pena.
 - `lowlighter/metrics` continua em `@latest` (canal estável recomendado pelo projeto); as demais actions estão fixadas por SHA.
 - O ruff do pre-commit e o do `uv.lock` são versões declaradas em dois lugares. O Dependabot atualiza os dois toda semana.
 
