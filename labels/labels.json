@@ -29,7 +29,8 @@
 
     { "name": "good first issue", "color": "7057ff", "description": "Good for newcomers" },
     { "name": "help wanted", "color": "008672", "description": "Extra attention is needed" },
-    { "name": "dependencies", "color": "0366d6", "description": "Dependency updates (Dependabot)" }
+    { "name": "dependencies", "color": "0366d6", "description": "Dependency updates (Dependabot)" },
+    { "name": "report", "color": "5319e7", "description": "Automated activity reports" }
   ],
   "replace_defaults": ["bug", "documentation", "duplicate", "enhancement", "invalid", "question", "wontfix"]
 }

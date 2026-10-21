@@ -1,0 +1,24 @@
+# Toda segunda, cria uma issue "📊 Weekly summary — AAAA-Www" com a atividade da semana
+# em todos os repositórios públicos, e fecha o resumo anterior.
+# Para desativar: Actions > Weekly summary > "Disable workflow".
+name: Weekly summary
+
+on:
+  schedule:
+    - cron: "0 11 * * 1" # segundas, 08:00 em Brasília
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - run: uv run --python 3.13 scripts/weekly_report.py summary
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

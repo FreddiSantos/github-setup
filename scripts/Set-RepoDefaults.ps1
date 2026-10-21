@@ -7,9 +7,16 @@
 #
 # Reverter: Settings > General (Pull Requests), Settings > Security e Settings > Actions > General.
 
+#   ... -RequiredChecks "Lint (pre-commit),Build"                # nomes dos jobs exigidos na main
+#
+# Ruleset "main protection": checks obrigatórios para PRs, sem apagar a main e sem force push.
+# O papel admin (você) pode ignorar a regra, então push direto continua funcionando.
+
 param(
     [Parameter(Mandatory = $true)][string]$Repo,
-    [switch]$AllowActionsPullRequests
+    [switch]$AllowActionsPullRequests,
+    # Texto com os nomes dos checks separados por vírgula (com -File, o PowerShell não recebe arrays).
+    [string]$RequiredChecks = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -61,6 +68,39 @@ Write-Host "[ok] Actions: token padrão read-only, criar PRs = $canPr"
 # Branches de PR são apagadas depois do merge.
 $merge = '{"allow_squash_merge":true,"allow_merge_commit":false,"allow_rebase_merge":false,' +
          '"squash_merge_commit_title":"PR_TITLE","squash_merge_commit_message":"PR_BODY",' +
-         '"delete_branch_on_merge":true}'
+         '"delete_branch_on_merge":true,"allow_auto_merge":true}'
 Invoke-Gh @('-X', 'PATCH', "repos/$Repo") $merge
-Write-Host "[ok] Merge: só squash (título do PR), apagar branch após merge"
+Write-Host "[ok] Merge: só squash (título do PR), apagar branch após merge, auto-merge permitido"
+
+# Ruleset da branch padrão
+$checks = @($RequiredChecks -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+$rules = @(@{ type = 'deletion' }, @{ type = 'non_fast_forward' })
+if ($checks.Count -gt 0) {
+    $rules += @{
+        type       = 'required_status_checks'
+        parameters = @{
+            strict_required_status_checks_policy = $false
+            required_status_checks               = @($checks | ForEach-Object { @{ context = $_ } })
+        }
+    }
+}
+$ruleset = @{
+    name          = 'main protection'
+    target        = 'branch'
+    enforcement   = 'active'
+    conditions    = @{ ref_name = @{ include = @('~DEFAULT_BRANCH'); exclude = @() } }
+    # actor_id 5 = papel "Repository admin"
+    bypass_actors = @(@{ actor_id = 5; actor_type = 'RepositoryRole'; bypass_mode = 'always' })
+    rules         = $rules
+} | ConvertTo-Json -Depth 10
+
+# Filtra no PowerShell: o 5.1 parte argumentos com espaços/aspas ao chamar programas externos.
+$existingId = (gh api "repos/$Repo/rulesets" | ConvertFrom-Json |
+    Where-Object { $_.name -eq 'main protection' } | Select-Object -First 1).id
+if ($existingId) {
+    Invoke-Gh @('-X', 'PUT', "repos/$Repo/rulesets/$existingId") $ruleset
+    Write-Host "[ok] Ruleset 'main protection' atualizado (checks: $($checks -join ', '))"
+} else {
+    Invoke-Gh @('-X', 'POST', "repos/$Repo/rulesets") $ruleset
+    Write-Host "[ok] Ruleset 'main protection' criado (checks: $($checks -join ', '))"
+}

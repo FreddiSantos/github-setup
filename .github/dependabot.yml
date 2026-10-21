@@ -1,8 +1,20 @@
-# Atualiza semanalmente os hooks do pre-commit.
-# O bloco de github-actions volta quando este repositório tiver workflows (Etapa 5);
-# sem nenhum workflow, o Dependabot falha com "dependency_file_not_found".
+# Atualiza semanalmente as actions (inclusive as dos workflows reutilizáveis) e os hooks do pre-commit.
 version: 2
 updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions:
+        patterns: ["*"]
+
   - package-ecosystem: pre-commit
     directory: /
     schedule:

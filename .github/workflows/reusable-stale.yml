@@ -1,0 +1,47 @@
+# Workflow REUTILIZÁVEL: marca e fecha issues e PRs inativos, com aviso antes.
+# Cada repositório chama este arquivo (ver templates/workflows/stale.yml).
+name: Reusable · Stale
+
+on:
+  workflow_call:
+    inputs:
+      days-before-issue-stale:
+        type: number
+        default: 60
+      days-before-pr-stale:
+        type: number
+        default: 30
+      days-before-close:
+        type: number
+        default: 14
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          days-before-issue-stale: ${{ inputs.days-before-issue-stale }}
+          days-before-pr-stale: ${{ inputs.days-before-pr-stale }}
+          days-before-close: ${{ inputs.days-before-close }}
+          stale-issue-label: "status: stale"
+          stale-pr-label: "status: stale"
+          # Nunca mexer em prioridades altas, itens bloqueados, releases e relatórios.
+          exempt-issue-labels: "priority: high,status: blocked,report"
+          exempt-pr-labels: "priority: high,status: blocked,autorelease: pending,dependencies"
+          exempt-all-milestones: true
+          stale-issue-message: >
+            This issue has had no activity for ${{ inputs.days-before-issue-stale }} days.
+            It will be closed in ${{ inputs.days-before-close }} days unless there is new activity
+            or the `status: stale` label is removed.
+          stale-pr-message: >
+            This pull request has had no activity for ${{ inputs.days-before-pr-stale }} days.
+            It will be closed in ${{ inputs.days-before-close }} days unless it is updated.
+          close-issue-message: "Closed due to inactivity. Feel free to reopen if it is still relevant."
+          close-pr-message: "Closed due to inactivity. Feel free to reopen if it is still relevant."
+          close-issue-reason: not_planned
