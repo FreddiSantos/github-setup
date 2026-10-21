@@ -89,7 +89,9 @@ $ruleset = @{
     target        = 'branch'
     enforcement   = 'active'
     conditions    = @{ ref_name = @{ include = @('~DEFAULT_BRANCH'); exclude = @() } }
-    # actor_id 5 = papel "Repository admin"
+    # actor_id 5 = papel "Repository admin" (você). O GitHub NÃO aceita o GitHub Actions como
+    # bypass em contas pessoais ("must be part of the ruleset source or owner organization"):
+    # em repositórios onde workflows commitam na main (perfil, jornada), rode sem -RequiredChecks.
     bypass_actors = @(@{ actor_id = 5; actor_type = 'RepositoryRole'; bypass_mode = 'always' })
     rules         = $rules
 } | ConvertTo-Json -Depth 10
