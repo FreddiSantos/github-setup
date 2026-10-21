@@ -54,6 +54,17 @@ Repositório de perfil: `FreddiSantos/FreddiSantos` (o README dele aparece na p�
 
 **Para desativar:** Actions → escolha o workflow → `···` → *Disable workflow*.
 
+### Publicação (2026-10-21, aprovada por você)
+
+| Repositório | Visibilidade | Como reverter |
+|---|---|---|
+| [FreddiSantos/FreddiSantos](https://github.com/FreddiSantos/FreddiSantos) | pública | Settings → Danger Zone → visibilidade ou exclusão |
+| [FreddiSantos/github-setup](https://github.com/FreddiSantos/github-setup) | pública | idem |
+
+**Verificação:**
+- `Sync pinned projects` rodado manualmente: ✅ sucesso ("README já estava em dia"; nenhum commit, como esperado sem fixados).
+- `Metrics`: ❌ falhou no primeiro push com "You must provide a valid GitHub personal token". **Esperado** até o secret `METRICS_TOKEN` ser criado. Depois disso, rode de novo: `gh workflow run metrics.yml -R FreddiSantos/FreddiSantos`.
+
 ## Pendências que dependem de você
 
 - [ ] Criar o PAT `METRICS_TOKEN` (instruções no relatório da Etapa 1) e salvar como secret do repositório de perfil
