@@ -86,6 +86,22 @@ Decisões: licença **MIT**; template `FreddiSantos/python-project-template`.
 
 **Verificação:** rodei localmente os mesmos passos do CI: lint ✅, formatação ✅, 3 testes ✅ e build ✅.
 
+**Ajustes de padrão de mercado** (você delegou a escolha):
+
+| Ajuste | Por quê |
+|---|---|
+| Actions fixadas por **SHA** com a versão em comentário | uma tag pode ser movida por quem controla a action; o SHA não. É a recomendação do GitHub e da OpenSSF, e o Dependabot atualiza os dois |
+| CI dividido em `lint`, `test` e `build`; `build` só roda se os outros passarem | erros aparecem separados e mais rápido |
+| Testes em **Python 3.12 e 3.13** (matriz) | garante que funciona nas versões suportadas |
+| Cobertura com **pytest-cov**, mínimo de 80% | métrica de qualidade que recrutadores reconhecem |
+| `timeout-minutes` em cada job | um job travado não consome minutos do Actions |
+| `CITATION.cff` | GitHub mostra "Cite this repository"; padrão em projetos acadêmicos e de pesquisa (LIA) |
+| `.env.example` com `SEED=42` | mostra como configurar chaves sem expor secrets, e fixa a semente |
+| `.vscode/extensions.json` | o VS Code sugere as extensões certas (Python, Ruff) |
+| README com estrutura de pastas, hardware e citação | reprodutibilidade e leitura rápida |
+
+Verificado de novo: lint ✅, testes em 3.12 e 3.13 ✅ (cobertura 100%), build ✅, `CITATION.cff` válido pelo `cffconvert` ✅.
+
 **Observações:**
 - `*.csv` é ignorado em todo o repositório. Se um projeto precisar versionar um CSV pequeno de exemplo, use `git add -f arquivo.csv`.
 - Os templates de issue aplicam as labels `type: bug`, `type: feature` e `status: triage`, que serão criadas na Etapa 4. Até lá, o GitHub simplesmente ignora as labels inexistentes.
